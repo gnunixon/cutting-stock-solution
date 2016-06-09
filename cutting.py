@@ -127,6 +127,16 @@ def make_step(parent, dimensions):
 
 
 def find_solution(layout, rows, columns):
+    """
+    A slow version of layouting. Return all the possible variants of layouting
+    for the given set of articles dimensions
+
+    :param list layout: the list of dimensions of articles
+    :param int rows: the number of rows on the page
+    :param int columns: the number of columns on the page
+    :returns: the list of all variants of layouting
+    :rtype: list
+    """
     page = create_matrix(rows, columns)
     solutions = []
     ret = []
@@ -157,6 +167,16 @@ def find_solution(layout, rows, columns):
 
 
 def fast_verify(layout, page_rows, page_columns):
+    """
+    Verify if the given set of articles can be layout on the page with given
+    dimensions
+
+    :param list layout: the list of dimensions of articles
+    :param int page_rows: the number of rows in the page
+    :param int page_columns: the number of columns in the page
+    :returns: True if the articles can be layouted on the page
+    :rtype: bool
+    """
     page = create_matrix(page_rows, page_columns)
     dims = layout['dimensions']
     dimensions = reversed(sorted(dims, key=lambda k: k['area']))
@@ -175,17 +195,35 @@ def fast_verify(layout, page_rows, page_columns):
     return True
 
 
-def generator_fast_verify(layouts):
+def generator_fast_verify(layouts, page_rows, page_columns):
+    """
+    Give the list of layouts and return a generator with the valid layouts
+
+    :param list layouts: the list of layouts
+    :param int page_rows: the number of rows in the page
+    :param int page_columns: the number of columns in the page
+    :returns: the list of valid layouts
+    :rtype: generator
+    """
     for i, layout in enumerate(layouts):
-        if fast_verify(layout):
+        if fast_verify(layout, page_rows, page_columns):
             yield layout
 
 
 def generate_tile_orders(articles, rows, columns):
+    """
+    Returns the 5 best solutions to arange the articles on the page
+
+    :param list articles: the list with the dimensions of all variants of articles
+    :param int rows: the number of rows on the page
+    :param int columns: the number of columns on the page
+    :returns: the best 5 variants of layouting
+    :rtype: generator
+    """
     layouts = generate_layouts(articles)
     count = 0
     for layout in generator_fast_verify(layouts, rows, columns):
-        sols = find_solution(layout, False)
+        sols = find_solution(layout, rows, columns)
         if sols and count < 5:
             count += 1
             yield sols
